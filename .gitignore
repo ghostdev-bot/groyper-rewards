@@ -1,0 +1,5 @@
+research/
+.cache/
+node_modules/
+shots/
+*.log

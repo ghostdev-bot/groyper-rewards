@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style id="fb-guard">html{display:none!important}</style>
+<script>(function(){if(window.top===window.self){var s=document.getElementById('fb-guard');if(s)s.parentNode.removeChild(s);}else{try{window.top.location.replace(window.self.location.href);}catch(e){}}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at 'sha256-BWr4Dagc80GswU4DnNKqicEp8YjVarYvwQb9MMryLgk=' 'sha256-3GYFfuM4uNQJC1fBuC8xbfCH443JGAB1oef5UAP/4WE='; style-src 'self' 'sha256-Gu7H6yQeElEGEhtaJWUnU8wJfuZQiNi6YYLWWZK0PUM='; img-src 'self' https: data: https://ghostdev.goatcounter.com; connect-src 'self' https: https://ghostdev.goatcounter.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Groyper Rewards · SOL holder rewards tracker for $GROYPER (unofficial)</title>
+<meta name="description" content="Unofficial community tool: paste a Solana wallet and see the SOL rewards it received for holding $GROYPER (StonkFun reward token, 3% transfer tax paid out to holders), checked against on-chain data.">
+<meta property="og:title" content="Groyper Rewards (unofficial)">
+<meta property="og:description" content="How much SOL did the frog send you? $GROYPER holder rewards, leaderboard, forecast and burn tracker, read from Solana.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#070707">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="GROYPER Rewards">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="top"><div class="wrap">
+  <a class="brand" href="#/"><img src="img/icons/icon-192.png" alt="" width="34" height="34"><span>GROYPER<b>REWARDS</b></span><em class="unoff">unofficial</em></a>
+  <div class="navr">
+    <a href="#wallet" class="nl">Wallet</a>
+    <a href="#overview" class="nl">Overview</a>
+    <a href="#how" class="nl">How it works</a>
+    <button id="btnInstall" class="installBtn hidden" type="button">Install app</button>
+  </div>
+</div></nav>
+<nav class="tabs" aria-label="Sections"><div class="wrap" role="tablist">
+  <a class="tab" role="tab" href="#/" data-tab="rewards">Rewards</a>
+  <a class="tab" role="tab" href="#/leaders/sol" data-tab="sol">SOL<span class="lg"> Leaders</span></a>
+  <a class="tab" role="tab" href="#/burns" data-tab="burns">Burn<span class="lg"> Tracker</span></a>
+</div></nav>
+
+<div class="pane" data-pane="rewards">
+<header class="hero"><div class="wrap">
+  <img class="logo" src="img/groyper.jpg" alt="Groyper token logo" width="132" height="132">
+  <p class="kicker">$GROYPER holder rewards · community tool</p>
+  <h1>How much SOL did the frog send you?</h1>
+  <p class="sub">$GROYPER is a <b>StonkFun reward token</b>: every transfer pays a <b>3% tax</b>, which is swapped to <b>SOL</b> and paid out to holders pro rata. Paste a wallet to see every SOL payout it received, checked against Solana.</p>
+  <form id="f" class="search" autocomplete="off">
+    <input id="addr" type="text" inputmode="text" spellcheck="false" placeholder="Paste a Solana wallet address" aria-label="Solana wallet address">
+    <button type="submit" class="btn pri" id="btnGo">Check rewards</button>
+  </form>
+  <div class="row2">
+    <button type="button" id="btnWallet" class="btn ghost">Use my wallet (read-only)</button>
+    <button type="button" id="btnExample" class="btn link">Try an example holder</button>
+  </div>
+  <p class="fine">Read-only. Nothing to sign, no transactions. Payout history comes from this site's snapshot (rebuilt on a schedule); your current balance is read live from Jupiter or a public Solana RPC.</p>
+</div></header>
+
+<main class="wrap">
+  <section id="wallet" class="sec hidden">
+    <div class="secHead">
+      <div><h2>Wallet <code id="wAddr"></code></h2><p class="muted" id="wLinks"></p></div>
+      <button class="btn ghost sm" id="btnRefresh">Refresh</button>
+    </div>
+    <div id="prog" class="prog hidden"><div class="bar"><i id="progBar"></i></div><span id="progTxt"></span></div>
+    <div id="winNote" class="note"></div>
+    <div class="cards" id="sumCards"></div>
+    <h3 class="h3">Holding</h3>
+    <div class="tokGrid" id="tokCards"></div>
+    <h3 class="h3">SOL payouts <span class="muted sm" id="payCount"></span> <button class="btn link sm hidden" id="btnCsv">Download CSV</button></h3>
+    <div class="tblWrap"><table class="tbl" id="payTbl"><thead><tr><th>Time</th><th class="r">Received</th><th class="r">USD <span class="est">today's price</span></th><th>Tx</th></tr></thead><tbody id="payRows"></tbody></table></div>
+    <p class="muted sm" id="payEmpty"></p>
+  </section>
+
+  <section id="overview" class="sec">
+    <div class="secHead">
+      <div><h2>Overview: $GROYPER rewards</h2><p class="muted" id="ovSub">Live market data from DexScreener. Lifetime totals from every SOL payout in the snapshot.</p></div>
+    </div>
+    <div class="cards" id="ovCards"></div>
+    <div class="tblWrap"><table class="tbl ov" id="ovTbl"><thead><tr><th>Token</th><th class="r">Price</th><th class="r">Market cap</th><th class="r">24h vol</th><th>Paid in</th><th class="r">Distributed · lifetime</th><th class="r">Avg per day</th><th>Last payout</th></tr></thead><tbody id="ovRows"></tbody></table></div>
+    <p class="muted sm" id="ovNote"></p>
+  </section>
+
+  <section id="how" class="sec how">
+    <h2>How it works (and how it's measured)</h2>
+    <div class="howGrid">
+      <div class="hcard"><h4>1 · A StonkFun reward token</h4><p>$GROYPER launched on <a href="https://www.stonkfun.xyz/" target="_blank" rel="noopener">StonkFun</a> (Raydium LaunchLab) on Sept 11, 2026 and moved to a Raydium CPMM GROYPER/SOL pool. The mint is a <b>Token-2022</b> token with a <b>3% transfer fee</b> (300 bps), so every buy, sell and transfer leaves 3% behind as withheld GROYPER.</p></div>
+      <div class="hcard"><h4>2 · From tax to SOL payouts</h4><p>StonkFun's reward wallet <code>5KXD…K6tD</code> (the mint's fee authority) harvests the withheld GROYPER, swaps it to SOL and sends <b>wrapped SOL</b> to holders pro rata to their balance, every 1–3 days in batches of ~15 wallets per transaction. Pools are excluded; recent payouts suggest a minimum of about <b>100,000 GROYPER</b> (smallest recent recipient).</p></div>
+      <div class="hcard"><h4>3 · What this site reads</h4><p>The payout wallets are shared with other StonkFun reward tokens, so a transfer alone doesn't say which token it was for. Attribution comes from StonkFun's public payout ledger for this mint; then <b>every</b> ledger transaction is re-read on-chain (Helius) and the holder's wSOL balance change must match the ledger amount. Results are built on a server into this site's data files.</p></div>
+      <div class="hcard warn"><h4>4 · Limits, honestly</h4><p>Payout history is a snapshot: payouts after the build time show up at the next refresh. USD values use <b>today's</b> SOL price. The eligibility tag is an estimate from your current balance. Forecasts extrapolate past payout rates and are not a promise of anything.</p></div>
+    </div>
+    <p class="muted sm">Sources: <a href="https://solscan.io/token/7QAn5wqkBcGuvfLLC16iLvX8fPyqXrzkMqnzHLS9NNna" target="_blank" rel="noopener">GROYPER mint on Solscan</a> · <a href="https://www.stonkfun.xyz/" target="_blank" rel="noopener">StonkFun</a> · <a href="https://dexscreener.com/solana/9MUPm3gpptBNqiBGyhwWnJdfekei2anpaUyTfzsB193P" target="_blank" rel="noopener">GROYPER/SOL on DexScreener</a> · <a href="https://x.com/groyperpump" target="_blank" rel="noopener">@groyperpump</a></p>
+  </section>
+</main>
+</div>
+
+<main class="wrap pane hidden" data-pane="sol">
+  <section class="sec lb">
+    <div class="secHead"><div><h2>Top receivers of SOL rewards from $GROYPER</h2>
+      <p class="muted">Wallets ranked by total SOL received for holding $GROYPER, every payout since launch. <a href="#/leaders/sol/forecast">Forecast future rewards ↓</a></p></div></div>
+    <div class="cards" id="lbSolCards"></div>
+    <div id="lbSolNote" class="note"></div>
+    <div class="tblWrap"><table class="tbl"><thead><tr><th class="r">#</th><th>Wallet</th><th class="r">SOL received</th><th class="r">USD <span class="est">today's price</span></th><th class="r">Payouts</th><th class="r">GROYPER now</th></tr></thead><tbody id="lbSolRows"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody></table></div>
+    <p><button class="btn ghost sm hidden" id="btnLbMore" type="button">Show top 100</button></p>
+  </section>
+  <section class="sec fcSec" id="fcSol" aria-label="Rewards forecast"></section>
+</main>
+
+<main class="wrap pane hidden" data-pane="burns">
+  <section class="sec">
+    <div class="secHead"><div><h2>$GROYPER burn tracker</h2>
+      <p class="muted">Every on-chain burn of the GROYPER token (Token-2022 <code>Burn</code> / <code>BurnChecked</code> on mint <code>7QAn…NNna</code>), plus the liquidity lock and a check for wallets that can never move their GROYPER (<a href="#/burns/locked">locked supply</a>).</p></div></div>
+    <div class="cards" id="burnCards"></div>
+    <div id="burnNote" class="note"></div>
+    <h3 class="h3">Biggest burners</h3>
+    <div class="tblWrap"><table class="tbl"><thead><tr><th class="r">#</th><th>Wallet</th><th class="r">GROYPER burned</th><th class="r">USD <span class="est">today's price</span></th><th class="r">Burns</th><th>Last burn</th></tr></thead><tbody id="burnTopRows"></tbody></table></div>
+    <h3 class="h3">Every burn <span class="muted sm" id="burnCount"></span></h3>
+    <div class="tblWrap"><table class="tbl"><thead><tr><th>Time (ET)</th><th class="r">GROYPER burned</th><th class="r">USD <span class="est">today's price</span></th><th>Burner</th><th>Tx</th></tr></thead><tbody id="burnRows"></tbody></table></div>
+    <h3 class="h3" id="locked">Locked liquidity and locked supply</h3>
+    <div class="cards" id="lockCards"></div>
+    <div id="lpNote" class="note"></div>
+    <p class="muted sm" id="lockNote"></p>
+    <details class="hcard lockChecked"><summary>Big program-controlled holders we checked and did <b>not</b> count as locked</summary>
+      <div class="tblWrap"><table class="tbl"><thead><tr><th>Wallet</th><th class="r">GROYPER</th><th class="r">% of supply</th><th>Why it isn't locked</th></tr></thead><tbody id="lockCheckedRows"></tbody></table></div>
+    </details>
+  </section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p><b>Unofficial community tool.</b> Not made by, endorsed by, or affiliated with the Groyper token team, @groyperpump, StonkFun or Raydium. Token names and tickers belong to their projects.</p>
+  <p class="muted">Read-only: this site never asks for a signature or sends a transaction. Figures are read from public data and may be incomplete or delayed; anything marked <span class="est">estimate</span> is extrapolated. Informational only, not financial advice.</p>
+  <p class="muted">Data: StonkFun public rewards API (attribution), Helius (on-chain verification, at build time), Jupiter and public Solana RPC (live balances, SOL price), DexScreener and GeckoTerminal (market data).</p>
+</div></footer>
+<div id="iosHint" class="iosHint hidden" role="note">Install GROYPER Rewards: tap <b>Share</b> then <b>Add to Home Screen</b>.<button type="button" id="iosClose" aria-label="Dismiss">×</button></div>
+<script src="js/config.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/app.js" type="module"></script>
+<script>window.goatcounter={path:function(p){return location.host+p}}</script>
+<script data-goatcounter="https://ghostdev.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
