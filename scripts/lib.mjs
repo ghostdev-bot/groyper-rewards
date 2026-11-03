@@ -12,7 +12,7 @@ function rpcUrl() {
 const URL_ = rpcUrl();
 // The Helius key is domain-restricted in the Helius dashboard. groyperrewards.surge.sh is NOT on its allow-list (403),
 // so these box-side builds send an allowed origin (override with HELIUS_ORIGIN once the new domain is added).
-const ORIGIN = process.env.HELIUS_ORIGIN || 'https://boborewards.surge.sh';
+const ORIGIN = process.env.HELIUS_ORIGIN || 'https://groyperrewards.surge.sh';
 export let credits = 0;
 export const addCredits = n => { credits += n; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
